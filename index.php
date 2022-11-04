@@ -1,21 +1,13 @@
 <?php
 
-    $host = "localhost";
-    $dbName = "pokemon";
-    $dbPort = "3306";
-    $dbUser = "root";
-    $dbPassword = "";
+use Controller\PokemonApiClass;
+use Controller\PokemonController;
 
-    $strConn = "mysql:host=" . $host 
-                . ";dbname=" . $dbName 
-                . ";port=" . $dbPort;
+include_once ('vendor/autoload.php');
 
-    $pdoOptions = [
-        PDO::ATTR_PERSISTENT => TRUE,
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, 
-    ];
-    
-    $connection = new PDO($strConn, $dbUser, $dbPassword, $pdoOptions);
+$pokemonClass = new PokemonController();
+$pokemonApiClass = new PokemonApiClass();
+
 ?>
 <!DOCTYPE html>
 
@@ -53,39 +45,14 @@
         if (isset($_POST['pokemonId'])) {
             $pokemonId = $_POST['pokemonId'];
 
-            $sqlSelect = "SELECT * FROM pokemon WHERE pokemon_id = $pokemonId or `name` = '$pokemonId' ";
-            $query = $connection->prepare($sqlSelect);
-            $query->execute();
-            $resultSelect = $query->fetch(PDO::FETCH_ASSOC);
+            $resultSelect = $pokemonClass->checkIfPokemonExists($pokemonId);
 
             if (empty($resultSelect)) {
-                $apiUrl = "https://pokeapi.co/api/v2/pokemon/";
+                $response = $pokemonApiClass->checkPokemon($pokemonId);
 
-                $curl = curl_init();
-                curl_setopt_array($curl, [
-                    CURLOPT_RETURNTRANSFER => 1,
-                    CURLOPT_URL => $apiUrl . $pokemonId . '/',
-                ]);
-    
-                $response = curl_exec($curl);
-    
-                curl_close($curl);
-    
-                $response = json_decode($response);
-
-                $sqlInsert = "INSERT INTO pokemon (pokemon_id, `name`, type_id) VALUES (
-                    " . $response->id .",
-                    '". $response->name ."',
-                    1
-                )";
-
-                $query = $connection->prepare($sqlInsert);
-                $query->execute();
-
-                $sqlSelect = "SELECT * FROM pokemon WHERE pokemon_id = $pokemonId or `name` = '$pokemonId' ";
-                $query = $connection->prepare($sqlSelect);
-                $query->execute();
-                $resultSelect = $query->fetch(PDO::FETCH_ASSOC);
+                $pokemonClass->insertPokemonIntoDatabase($response);
+                
+                $resultSelect = $pokemonClass->checkIfPokemonExists($pokemonId);
             }
             
             if ($resultSelect) {

@@ -1,0 +1,19 @@
+{
+    "name": "anddf/poke-api",
+    "description": "'brincando com api do pokemon'",
+    "type": "project",
+    "authors": [
+        {
+            "name": "André Fontoura",
+            "email": "45948615+AnddFontoura@users.noreply.github.com"
+        }
+    ],
+    "require": {
+        "nesbot/carbon": "^2.62"
+    },
+    "autoload": {
+        "psr-4": {
+            "Controller\\":"app/Controller"
+        }
+    }
+}
